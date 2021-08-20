@@ -1,0 +1,37 @@
+import vk_api
+from vk_api.longpoll import VkLongPoll, VkEventType
+
+m = 0.0
+h = 0.0
+procedure = 1
+my_token = 'your token'
+session = vk_api.VkApi(token=my_token)
+vk = session.get_api()
+longpoll = VkLongPoll(session)
+
+def send(msg, id):
+    session.method('messages.send', {'user_id' : id, 'message' : msg, 'random_id' : 0})
+    
+for event in longpoll.listen():
+    if event.type == VkEventType.MESSAGE_NEW:
+        if event.to_me:
+            msg = event.text.lower()
+            id = event.user_id
+            ident = int(id)
+            if(msg == '/bmi'):
+                procedure = 1
+                send('Enter your mass please(kg)', ident)
+                procedure = procedure + 1
+            elif(procedure == 2):
+                if(msg.isdigit()):
+                    m = int(msg)
+                    procedure = procedure + 1
+                    send('Enter your height please(cm)', ident)
+                else:
+                    send('Enter digits please', ident)
+            elif(procedure == 3):
+                if(msg.isdigit()):
+                    h = int(msg)/100 
+                    send('Your body mass index: ' + str(m/(h*h)), ident)
+                else:
+                    send('Enter digits please', ident)
